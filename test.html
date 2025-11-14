@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>夏以昼</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: '微软雅黑','PingFang SC','Hiragino Sans GB',Arial,sans-serif;
+            background: #000;
+            overflow: hidden;
+
+            /* ★ 修复黑屏：不能 fixed，不能 touch-action:none */
+            position: relative;
+            min-height: 100vh;
+        }
+
+        /* ★ 血流动画 */
+        @keyframes bloodFlow {
+            0% {
+                text-shadow: 0 0 5px red, 0 0 10px darkred;
+                color: #ff2a2a;
+            }
+            50% {
+                text-shadow: 0 0 12px #8b0000, 0 0 16px red;
+                color: #ff0000;
+            }
+            100% {
+                text-shadow: 0 0 5px red, 0 0 10px darkred;
+                color: #ff2a2a;
+            }
+        }
+
+        .window {
+            position: absolute;
+            width: 85vw;
+            max-width: 350px;
+            min-height: 120px;
+            background: black;
+
+            /* ★ 渐变边框：宝蓝 → 橙色 */
+            border: 3px solid transparent;
+            border-radius: 10px;
+            background-clip: padding-box, border-box;
+            background-origin: padding-box, border-box;
+            background-image:
+                linear-gradient(black, black),
+                linear-gradient(to bottom, #0033cc, #ff7a00);
+
+            box-shadow: 0 0 20px rgba(255,80,0,0.6);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .window-header {
+            background: #1a1a1a;
+            padding: 12px 15px;
+            font-weight: bold;
+
+            /* header 渐变边 */
+            border-bottom: 2px solid transparent;
+            background-image:
+                linear-gradient(#1a1a1a, #1a1a1a),
+                linear-gradient(to right, #0033cc, #ff7a00);
+            background-clip: padding-box, border-box;
+            background-origin: padding-box, border-box;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+
+            color: red;
+            animation: bloodFlow 2.5s infinite ease-in-out;
+        }
+
+        .close-btn {
+            border: none;
+            background: none;
+            font-size: 24px;
+            padding: 5px 10px;
+            color: red;
+            animation: bloodFlow 2.5s infinite ease-in-out;
+        }
+
+        .window-content {
+            padding: 20px 15px;
+            font-size: 15px;
+            text-align: center;
+            line-height: 1.6;
+            color: red;
+            animation: bloodFlow 2.5s infinite ease-in-out;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .final-window {
+            width: 90vw;
+            max-width: 500px;
+            min-height: 200px;
+            z-index: 10000;
+        }
+
+        .final-window .window-content {
+            font-size: 20px;
+            font-weight: bold;
+            padding: 30px 20px;
+        }
+
+        .hint {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: red;
+            animation: bloodFlow 2.5s infinite ease-in-out;
+            background: rgba(0,0,0,0.9);
+            padding: 10px 20px;
+            border: 1px solid red;
+            border-radius: 20px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 9999;
+        }
+
+        @media (max-width: 480px) {
+            .window { width: 90vw; }
+            .window-content { font-size: 14px; padding: 15px 12px; }
+            .final-window .window-content { font-size: 18px; padding: 25px 15px; }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="hint">双击屏幕空白处关闭所有窗口</div>
+
+    <script>
+        const tips = [
+            '好啊，那你需要什么？我都可以答应。',
+            '你想要回临空，我们就回临空',
+            '你想回到从前，我们就把老宅翻修，一起住过去',
+            '一座房子不够，那就给你建一座迷宫',
+            '我会在里面给你准备最好的一切，把它建成世界上最漂亮的花园',
+            '有我陪着你，以后他们就再也找不到你了。',
+            '一上大学就跟出笼的小鸟似的，这么久没回来，家里东西在哪都不记得了吧。',
+            '不许走，别留我一个人。',
+            '总是听不到你说想见我，我可以把它当作你想我的证据吗。',
+            '我的弱点还要确认吗？',
+            '不需要……呵，好啊。只要你打得过我，我就信你不会被欺负。',
+            '来吧，让我看看我不在的时候你都学了些什么。',
+            '就你这个样子，还说不需要我？',
+            '搬离了家里，见识到外面的世界，就想把过去的一切都丢下不管了吗？',
+            '当年不是你先牵住我的手，让我做你的哥哥的吗？',
+            '现在你觉得自己长大了，就要松开这只手了吗？',
+            '我一直想要和你在同一边的世界，而不是只能看着你，想象你。',
+            '我们是同源而生，不管多少次，请唤醒我。',
+            '但我们出生的那一刻就烙下的约定，我从来没有违背。',
+            '意识也好，躯体也罢，即便这些都不复存在，我的灵魂也仍然回与你同频。',
+            '说好了，生和死，都不再分开。'
+            '但是我一直记得是我先牵你的手，要你做我的哥哥'
+            '看你啊，有你自己的小世界了'
+            '现在怎么开始躲了'
+            '所有朝你打来的风雨都不该出现在这个世界上'
+            '你第一次拉住我的手的那一天我就已经跑不掉了'
+            '但你想要的我会做到'
+            '很久以前就在这里了'
+            '苹果果露45克，要夏以昼爱吃的那一种'
+            '人长大了，游戏也更新了'
+            '又安排了什么等着我，嗯?'
+            '早就猜到了，你的安排，我全都接受'
+            '但现在美味的东西如果不及时吃掉是会变坏的'
+            '怎么认不出我了吗'
+            '你有没有想过我从来就不是你的哥哥'
+            '我的年龄比你大，手也比你大，上学也会比你早'
+            '想和你留在从前只有我们两人的世界里'
+            '可惜远空舰队里只有士兵和长官，没有谁的哥哥'
+            '能想透这一层，那我们就来开诚布公地谈一谈'
+            '可不止一双眼睛看着你'
+            '很快就会结束了'
+            '回答我'
+            '只要你乖乖听话，不节外生枝，就不会受到伤害'
+            '你过关了'
+            '你想说我是不是也被什么芯片控制了，变得不像我自己'
+            '审判我的罪名是什么'
+            '你最大的错就是以为我愿意一直扮演你的好哥哥'
+            '还记得小时候你抱回来了一只受伤的猫吗，我给它系了一个铃铛它就再也逃不掉了'
+            '这场噩梦就到这里了'
+            '我们会一直在一起'
+            '在解决好一切之前，我需要确保你绝对安全'
+            '无论发生什么，我都会陪你一起'
+            '所以不以哥哥的身份关心，就不是真心了吗'
+            '当时我就想，等你长大了，这些账都要一笔笔算清'
+            '你也无法说服自己完全的讨厌我不是吗'
+            '只要你还在我身边，我总会想到哄你的办法'
+            '那你也拥有一点罪好不好'
+            '别让我太孤独了'
+            '有一种引力是你无论飞离陆地多远我总会回到你的身边'
+            '可是连你我也感受不到了'
+            '我不想让你痛'
+            '如果这是感受你的代价那我接受'
+            '比起其他人，你为了我而涉险才更让我痛苦'
+            '那就抱紧我吧，用你的右手'
+            '也只有你才能停止我的痛苦'
+            '不需要我？好啊，那你需要什么？'
+        ];
+
+        let windows = [];
+        let isDragging = false;
+        let currentWindow = null;
+        let lastTap = 0;
+
+        /* ★ 生成窗口函数（首个窗口强制居中） */
+        function createWindow(text, isFinal = false, isFirst = false, center = false) {
+            const win = document.createElement("div");
+            win.className = isFinal ? "window final-window" : "window";
+
+            document.body.appendChild(win);
+
+            const w = win.offsetWidth;
+            const h = win.offsetHeight;
+
+            // ★ 防止 mobile 获取错误高度
+            const viewportW = window.innerWidth;
+            const viewportH = window.innerHeight;
+
+            if (center) {
+                win.style.left = (viewportW - w) / 2 + "px";
+                win.style.top = (viewportH - h) / 2 + "px";
+            } else {
+                win.style.left = Math.random() * (viewportW - w) + "px";
+                win.style.top = Math.random() * (viewportH - h) + "px";
+            }
+
+            win.innerHTML = `
+                <div class="window-header">
+                    <span>妹妹</span>
+                    <button class="close-btn">×</button>
+                </div>
+                <div class="window-content">${text}</div>
+            `;
+
+            const closeBtn = win.querySelector(".close-btn");
+
+            closeBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                if (isFirst) {
+                    win.remove();
+                    windows = windows.filter(w => w !== win);
+                    createBatchWindows(40);
+                } else {
+                    closeAll();
+                }
+            });
+
+            windows.push(win);
+            return win;
+        }
+
+        function createBatchWindows(count, index = 0) {
+            if (index >= count) {
+                setTimeout(() => {
+                    createWindow("说好了，生和死，都不再分开。", true, false, true);
+                }, 300);
+                return;
+            }
+
+            const text = tips[Math.floor(Math.random() * tips.length)];
+            createWindow(text);
+
+            setTimeout(() => createBatchWindows(count, index + 1), 80);
+        }
+
+        function closeAll() {
+            windows.forEach(w => w.remove());
+            windows = [];
+        }
+
+        /* ★ 双击空白关闭全部 */
+        document.body.addEventListener("touchend", (e) => {
+            const now = Date.now();
+            if (now - lastTap < 300) {
+                closeAll();
+            }
+            lastTap = now;
+        });
+
+        /* ★ 初始化（首个窗口居中，防黑屏） */
+        createWindow("不需要我？", false, true, true);
+    </script>
+</body>
+</html>
