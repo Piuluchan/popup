@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>妹妹</title>
+    <title>夏以昼</title>
     <style>
         * {
             margin: 0;
@@ -13,7 +13,7 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        body {
+         body {
             font-family: '微软雅黑', 'PingFang SC', 'Hiragino Sans GB', Arial, sans-serif;
             overflow: hidden;
             background: #000;
@@ -23,46 +23,87 @@
             height: 100%;
         }
 
+        /* ★ 文字血流动画 ★ */
+        @keyframes bloodFlow {
+            0% {
+                text-shadow: 0 0 5px red, 0 0 10px darkred;
+                color: #ff2a2a;
+            }
+            50% {
+                text-shadow: 0 0 12px #8b0000, 0 0 16px red;
+                color: #ff0000;
+            }
+            100% {
+                text-shadow: 0 0 5px red, 0 0 10px darkred;
+                color: #ff2a2a;
+            }
+        }
+
         .window {
             position: fixed;
             width: 85vw;
             max-width: 350px;
             min-height: 120px;
+
+            /* ★ 背景仍然黑色 ★ */
             background: black;
-            border: 2px solid red;
+
+            /* ★ 渐变边框：宝蓝→橙色 ★ */
+            border: 3px solid transparent;
+            border-radius: 10px;
+            background-clip: padding-box, border-box;
+            background-origin: padding-box, border-box;
+            background-image:
+                linear-gradient(black, black),
+                linear-gradient(to bottom, #0033cc, #ff7a00);
+
+            box-shadow: 0 0 20px rgba(255, 80, 0, 0.6);
+
             z-index: 1000;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
-            border-radius: 8px;
             overflow: hidden;
         }
 
         .window-header {
             background: #1a1a1a;
-            color: red;
             padding: 12px 15px;
             font-weight: bold;
-            border-bottom: 1px solid red;
+
+            /* ★ header 边框改成渐变 ★ */
+            border-bottom: 2px solid transparent;
+            background-image:
+                linear-gradient(#1a1a1a, #1a1a1a),
+                linear-gradient(to right, #0033cc, #ff7a00);
+            background-clip: padding-box, border-box;
+            background-origin: padding-box, border-box;
+
             display: flex;
             justify-content: space-between;
             align-items: center;
             cursor: pointer;
             user-select: none;
+
+            /* ★ 红字加血流效果 ★ */
+            color: red;
+            animation: bloodFlow 2.5s infinite ease-in-out;
         }
 
         .close-btn {
             background: none;
             border: none;
-            color: red;
             font-size: 24px;
-            cursor: pointer;
             padding: 5px 10px;
             min-width: 40px;
             min-height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
+            cursor: pointer;
+
+            /* ★ 红字血流 ★ */
+            color: red;
+            animation: bloodFlow 2.5s infinite ease-in-out;
         }
 
         .close-btn:active {
@@ -72,7 +113,6 @@
 
         .window-content {
             padding: 20px 15px;
-            color: red;
             font-size: 15px;
             text-align: center;
             display: flex;
@@ -80,6 +120,10 @@
             justify-content: center;
             flex: 1;
             line-height: 1.6;
+
+            /* ★ 血流红字 ★ */
+            color: red;
+            animation: bloodFlow 2.5s infinite ease-in-out;
         }
 
         .final-window {
@@ -100,7 +144,11 @@
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
+
+            /* ★ 血流红字 ★ */
             color: red;
+            animation: bloodFlow 2.5s infinite ease-in-out;
+
             background: rgba(0, 0, 0, 0.9);
             padding: 10px 20px;
             border: 1px solid red;
@@ -114,17 +162,17 @@
             .window {
                 width: 90vw;
             }
-            
+
             .window-content {
                 font-size: 14px;
                 padding: 15px 12px;
             }
-            
+
             .final-window .window-content {
                 font-size: 18px;
                 padding: 25px 15px;
             }
-            
+
             .hint {
                 font-size: 11px;
                 padding: 8px 15px;
