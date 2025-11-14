@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>妹妹</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: '微软雅黑', 'PingFang SC', 'Hiragino Sans GB', Arial, sans-serif;
+            overflow: hidden;
+            background: #000;
+            touch-action: none;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+        }
+
+        .window {
+            position: fixed;
+            width: 85vw;
+            max-width: 350px;
+            min-height: 120px;
+            background: black;
+            border: 2px solid red;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .window-header {
+            background: #1a1a1a;
+            color: red;
+            padding: 12px 15px;
+            font-weight: bold;
+            border-bottom: 1px solid red;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: red;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px 10px;
+            min-width: 40px;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-btn:active {
+            color: #ff4444;
+            transform: scale(0.95);
+        }
+
+        .window-content {
+            padding: 20px 15px;
+            color: red;
+            font-size: 15px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            line-height: 1.6;
+        }
+
+        .final-window {
+            width: 90vw;
+            max-width: 500px;
+            min-height: 200px;
+            z-index: 10000;
+        }
+
+        .final-window .window-content {
+            font-size: 20px;
+            font-weight: bold;
+            padding: 30px 20px;
+        }
+
+        .hint {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: red;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 10px 20px;
+            border: 1px solid red;
+            border-radius: 20px;
+            z-index: 999;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 480px) {
+            .window {
+                width: 90vw;
+            }
+            
+            .window-content {
+                font-size: 14px;
+                padding: 15px 12px;
+            }
+            
+            .final-window .window-content {
+                font-size: 18px;
+                padding: 25px 15px;
+            }
+            
+            .hint {
+                font-size: 11px;
+                padding: 8px 15px;
+                bottom: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="hint">双击屏幕空白处关闭所有窗口</div>
+
+    <script>
+        const tips = [
+            '好啊，那你需要什么？我都可以答应。',
+            '你想要回临空，我们就回临空',
+            '你想回到从前，我们就把老宅翻修，一起住过去',
+            '一座房子不够，那就给你建一座迷宫',
+            '我会在里面给你准备最好的一切，把它建成世界上最漂亮的花园',
+            '有我陪着你，以后他们就再也找不到你了。',
+            '一上大学就跟出笼的小鸟似的，这么久没回来，家里东西在哪都不记得了吧。',
+            '不许走，别留我一个人。',
+            '总是听不到你说想见我，我可以把它当作你想我的证据吗。',
+            '我的弱点还要确认吗？',
+            '不需要……呵，好啊。只要你打得过我，我就信你不会被欺负。',
+            '来吧，让我看看我不在的时候你都学了些什么。',
+            '就你这个样子，还说不需要我？',
+            '搬离了家里，见识到外面的世界，就想把过去的一切都丢下不管了吗？',
+            '当年不是你先牵住我的手，让我做你的哥哥的吗？',
+            '现在你觉得自己长大了，就要松开这只手了吗？',
+            '我一直想要和你在同一边的世界，而不是只能看着你，想象你。',
+            '我们是同源而生，不管多少次，请唤醒我。',
+            '但我们出生的那一刻就烙下的约定，我从来没有违背。',
+            '意识也好，躯体也罢，即便这些都不复存在，我的灵魂也仍然回与你同频。',
+            '说好了，生和死，都不再分开。'
+        ];
+
+        let windows = [];
+        let isDragging = false;
+        let currentWindow = null;
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let windowStartX = 0;
+        let windowStartY = 0;
+        let lastTapTime = 0;
+
+        function createWindow(text, isFinal = false, isFirst = false) {
+            const win = document.createElement('div');
+            win.className = isFinal ? 'window final-window' : 'window';
+            
+            // 移动端适配：确保窗口在可视区域内
+            const windowWidth = isFinal ? Math.min(500, window.innerWidth * 0.9) : Math.min(350, window.innerWidth * 0.85);
+            const windowHeight = isFinal ? 200 : 120;
+            const maxX = window.innerWidth - windowWidth;
+            const maxY = window.innerHeight - windowHeight;
+            const x = isFinal ? (window.innerWidth - windowWidth) / 2 : Math.random() * Math.max(0, maxX);
+            const y = isFinal ? (window.innerHeight - windowHeight) / 2 : Math.random() * Math.max(0, maxY);
+            
+            win.style.left = x + 'px';
+            win.style.top = y + 'px';
+            
+            win.innerHTML = `
+                <div class="window-header">
+                    <span>妹妹</span>
+                    <button class="close-btn">×</button>
+                </div>
+                <div class="window-content">${text}</div>
+            `;
+            
+            // 添加关闭按钮事件（同时支持click和touch）
+            const closeBtn = win.querySelector('.close-btn');
+            const closeHandler = (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                if (isFirst) {
+                    win.remove();
+                    windows = windows.filter(w => w !== win);
+                    createBatchWindows(50); // 移动端减少到50个，避免卡顿
+                } else {
+                    closeAllWindows();
+                }
+            };
+            
+            closeBtn.addEventListener('click', closeHandler);
+            closeBtn.addEventListener('touchend', closeHandler);
+            
+            // 添加触摸拖拽功能
+            const header = win.querySelector('.window-header');
+            
+            header.addEventListener('touchstart', (e) => {
+                if (e.target.classList.contains('close-btn')) return;
+                e.preventDefault();
+                isDragging = true;
+                currentWindow = win;
+                const touch = e.touches[0];
+                touchStartX = touch.clientX;
+                touchStartY = touch.clientY;
+                windowStartX = win.offsetLeft;
+                windowStartY = win.offsetTop;
+                win.style.zIndex = isFinal ? 10000 : parseInt(win.style.zIndex || 1000) + 1;
+            });
+            
+            // 鼠标拖拽支持（PC端）
+            header.addEventListener('mousedown', (e) => {
+                if (e.target.classList.contains('close-btn')) return;
+                isDragging = true;
+                currentWindow = win;
+                touchStartX = e.clientX;
+                touchStartY = e.clientY;
+                windowStartX = win.offsetLeft;
+                windowStartY = win.offsetTop;
+                win.style.zIndex = isFinal ? 10000 : parseInt(win.style.zIndex || 1000) + 1;
+            });
+            
+            document.body.appendChild(win);
+            windows.push(win);
+            
+            return win;
+        }
+
+        // 触摸移动
+        document.addEventListener('touchmove', (e) => {
+            if (isDragging && currentWindow) {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const deltaX = touch.clientX - touchStartX;
+                const deltaY = touch.clientY - touchStartY;
+                currentWindow.style.left = (windowStartX + deltaX) + 'px';
+                currentWindow.style.top = (windowStartY + deltaY) + 'px';
+            }
+        }, { passive: false });
+
+        document.addEventListener('touchend', () => {
+            isDragging = false;
+            currentWindow = null;
+        });
+
+        // 鼠标移动（PC端）
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging && currentWindow) {
+                const deltaX = e.clientX - touchStartX;
+                const deltaY = e.clientY - touchStartY;
+                currentWindow.style.left = (windowStartX + deltaX) + 'px';
+                currentWindow.style.top = (windowStartY + deltaY) + 'px';
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            currentWindow = null;
+        });
+
+        function showSingleTip() {
+            createWindow('不需要我？', false, true);
+        }
+
+        function createBatchWindows(count, index = 0) {
+            if (index >= count) {
+                setTimeout(() => showFinalTip(), 500);
+                return;
+            }
+            
+            const randomTip = tips[Math.floor(Math.random() * tips.length)];
+            createWindow(randomTip);
+            
+            setTimeout(() => createBatchWindows(count, index + 1), 80);
+        }
+
+        function showFinalTip() {
+            createWindow('说好了，生和死，都不再分开。', true);
+        }
+
+        function closeAllWindows() {
+            windows.forEach(win => win.remove());
+            windows = [];
+        }
+
+        // 双击屏幕空白处关闭所有窗口
+        document.body.addEventListener('touchend', (e) => {
+            if (e.target === document.body) {
+                const currentTime = new Date().getTime();
+                const tapLength = currentTime - lastTapTime;
+                if (tapLength < 300 && tapLength > 0) {
+                    closeAllWindows();
+                }
+                lastTapTime = currentTime;
+            }
+        });
+
+        // 空格键关闭所有窗口（PC端保留）
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                closeAllWindows();
+            }
+        });
+
+        // 初始化：显示第一个窗口
+        showSingleTip();
+    </script>
+</body>
+</html>
